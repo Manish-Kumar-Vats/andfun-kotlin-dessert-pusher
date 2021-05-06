@@ -27,11 +27,13 @@ import androidx.core.app.ShareCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleObserver
 import com.example.android.dessertpusher.databinding.ActivityMainBinding
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private var revenue = 0
     private var dessertsSold = 0
+    private lateinit var dessertTimer: DessertTimer
 
     // Contains all the views
     private lateinit var binding: ActivityMainBinding
@@ -47,33 +49,42 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     // Create a list of all desserts, in order of when they start being produced
     private val allDesserts = listOf(
-            Dessert(R.drawable.cupcake, 5, 0),
-            Dessert(R.drawable.donut, 10, 5),
-            Dessert(R.drawable.eclair, 15, 20),
-            Dessert(R.drawable.froyo, 30, 50),
-            Dessert(R.drawable.gingerbread, 50, 100),
-            Dessert(R.drawable.honeycomb, 100, 200),
-            Dessert(R.drawable.icecreamsandwich, 500, 500),
-            Dessert(R.drawable.jellybean, 1000, 1000),
-            Dessert(R.drawable.kitkat, 2000, 2000),
-            Dessert(R.drawable.lollipop, 3000, 4000),
-            Dessert(R.drawable.marshmallow, 4000, 8000),
-            Dessert(R.drawable.nougat, 5000, 16000),
-            Dessert(R.drawable.oreo, 6000, 20000)
+        Dessert(R.drawable.cupcake, 5, 0),
+        Dessert(R.drawable.donut, 10, 5),
+        Dessert(R.drawable.eclair, 15, 20),
+        Dessert(R.drawable.froyo, 30, 50),
+        Dessert(R.drawable.gingerbread, 50, 100),
+        Dessert(R.drawable.honeycomb, 100, 200),
+        Dessert(R.drawable.icecreamsandwich, 500, 500),
+        Dessert(R.drawable.jellybean, 1000, 1000),
+        Dessert(R.drawable.kitkat, 2000, 2000),
+        Dessert(R.drawable.lollipop, 3000, 4000),
+        Dessert(R.drawable.marshmallow, 4000, 8000),
+        Dessert(R.drawable.nougat, 5000, 16000),
+        Dessert(R.drawable.oreo, 6000, 20000)
     )
     private var currentDessert = allDesserts[0]
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i("MainActivity", "onCreate Called")
+        Timber.i("onCreate Called")
 
         // Use Data Binding to get reference to the views
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        dessertTimer = DessertTimer(this.lifecycle)
 
+        if (savedInstanceState != null) {
+//            revenue = savedInstanceState.getInt("rev")
+            dessertsSold = savedInstanceState.getInt("des")
+        }
+
+
+        dessertTimer.startTimer()
         binding.dessertButton.setOnClickListener {
             onDessertClicked()
         }
 
+        Log.i("TAG", "onCreate")
         // Set the TextViews to the right values
         binding.revenue = revenue
         binding.amountSold = dessertsSold
@@ -126,15 +137,31 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
      */
     private fun onShare() {
         val shareIntent = ShareCompat.IntentBuilder.from(this)
-                .setText(getString(R.string.share_text, dessertsSold, revenue))
-                .setType("text/plain")
-                .intent
+            .setText(getString(R.string.share_text, dessertsSold, revenue))
+            .setType("text/plain")
+            .intent
         try {
             startActivity(shareIntent)
         } catch (ex: ActivityNotFoundException) {
-            Toast.makeText(this, getString(R.string.sharing_not_available),
-                    Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this, getString(R.string.sharing_not_available),
+                Toast.LENGTH_LONG
+            ).show()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("rev", revenue)
+        outState.putInt("des", dessertsSold)
+        Log.i("TAG", "onSaveInstanceState")
+
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        Log.i("TAG", "onRestoreInstanceState")
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -149,11 +176,35 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         return super.onOptionsItemSelected(item)
     }
 
-    /** Lifecycle Methods **/
 
     override fun onStart() {
         super.onStart()
-        Log.i("MainActivity", "onStart Called")
+        Log.i("TAG", "onStart")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i("TAG", "onStop")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.i("TAG", "onResume")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.i("TAG", "onRestart")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.i("TAG", "onPause")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i("TAG", "onDestroy")
     }
 
     // TODO (05) Here, override the rest of the lifecycle methods and use Timber to print
